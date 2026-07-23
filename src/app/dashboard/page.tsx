@@ -250,6 +250,7 @@ function BrandDashboard({
 }
 
 function CreatorDashboard({ range, setRange }: { range: string; setRange: (r: string) => void }) {
+  const router = useRouter()
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -340,7 +341,7 @@ function CreatorDashboard({ range, setRange }: { range: string; setRange: (r: st
               <HandCoins className="mx-auto h-12 w-12 text-emerald-500" />
               <p className="mt-4 text-3xl font-bold text-content-emphasis">$1,234.50</p>
               <p className="mt-1 text-sm text-content-subtle">Available for withdrawal</p>
-              <Button className="mt-4 bg-emerald-600 text-white hover:bg-emerald-700">
+              <Button className="mt-4 bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => router.push('/dashboard/earnings')}>
                 Request Payout
               </Button>
             </div>

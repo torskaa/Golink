@@ -2,14 +2,15 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { formatCurrency } from '@/lib/utils'
-import { DollarSign, TrendingUp, HandCoins, ArrowUpRight, Download } from 'lucide-react'
+import { DollarSign, TrendingUp, HandCoins, ArrowUpRight, Download, CheckCircle2, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 const transactions = [
   { id: '1', campaign: 'Summer Launch 2026', amount: 150.00, date: 'Jul 21, 2026', status: 'completed' },
@@ -23,6 +24,12 @@ const transactions = [
 export default function EarningsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [paypalEmail, setPaypalEmail] = useState('creator@example.com')
+  const [promptpayId, setPromptpayId] = useState('089-xxx-xxxx')
+  const [showWithdraw, setShowWithdraw] = useState(false)
+  const [showPaymentInfo, setShowPaymentInfo] = useState(false)
+  const [editPaypal, setEditPaypal] = useState('')
+  const [editPromptpay, setEditPromptpay] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -98,25 +105,91 @@ export default function EarningsPage() {
               <label className="text-xs font-medium text-content-subtle">Available Balance</label>
               <p className="text-2xl font-bold text-content-emphasis">{formatCurrency(1234.50)}</p>
             </div>
-            <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
+            <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" onClick={() => setShowWithdraw(true)}>
               <HandCoins className="mr-1.5 h-4 w-4" />
               Withdraw All
             </Button>
             <Separator className="bg-border-default" />
             <div>
               <label className="text-xs font-medium text-content-subtle">PromptPay ID</label>
-              <p className="text-sm text-content-emphasis">089-xxx-xxxx</p>
+              <p className="text-sm text-content-emphasis">{promptpayId}</p>
             </div>
             <div>
               <label className="text-xs font-medium text-content-subtle">PayPal Email</label>
-              <p className="text-sm text-content-emphasis">creator@example.com</p>
+              <p className="text-sm text-content-emphasis">{paypalEmail}</p>
             </div>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="sm" className="w-full" onClick={() => { setEditPaypal(paypalEmail); setEditPromptpay(promptpayId); setShowPaymentInfo(true) }}>
               Update Payment Info
             </Button>
           </CardContent>
         </Card>
       </div>
+      {showWithdraw && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowWithdraw(false)} />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 animate-scale-in rounded-xl border border-border-default bg-bg-default p-6 shadow-2xl">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-content-emphasis">Withdraw Funds</h2>
+              <p className="text-sm text-content-subtle">Available balance: {formatCurrency(1234.50)}</p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-content-subtle">Amount</label>
+                <input type="number" defaultValue={1234.50}
+                  className="mt-1.5 w-full rounded-lg border border-input bg-bg-default px-3 py-2.5 text-lg text-content-emphasis focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring transition-colors" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-content-subtle">Withdraw to</label>
+                <div className="mt-1.5 grid grid-cols-2 gap-2">
+                  <button className="rounded-lg border border-primary bg-primary/10 px-3 py-2.5 text-xs font-medium text-content-emphasis">PromptPay: {promptpayId}</button>
+                  <button className="rounded-lg border border-input bg-bg-default px-3 py-2.5 text-xs font-medium text-content-subtle hover:border-muted-foreground">PayPal: {paypalEmail}</button>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowWithdraw(false)}>Cancel</Button>
+                <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" onClick={() => { toast.success('Withdrawal request submitted!'); setShowWithdraw(false) }}>
+                  <HandCoins className="mr-1.5 h-4 w-4" />
+                  Withdraw
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {showPaymentInfo && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowPaymentInfo(false)} />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 animate-scale-in rounded-xl border border-border-default bg-bg-default p-6 shadow-2xl">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-content-emphasis">Payment Info</h2>
+              <p className="text-sm text-content-subtle">Update your payout methods</p>
+              <button onClick={() => setShowPaymentInfo(false)} className="absolute right-6 top-6 flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-subtle hover:text-content-emphasis transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-content-subtle">PayPal Email</label>
+                <input type="email" value={editPaypal} onChange={(e) => setEditPaypal(e.target.value)} placeholder="email@example.com"
+                  className="mt-1.5 w-full rounded-lg border border-input bg-bg-default px-3 py-2.5 text-sm text-content-emphasis placeholder-content-subtle focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring transition-colors" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-content-subtle">PromptPay ID</label>
+                <input type="text" value={editPromptpay} onChange={(e) => setEditPromptpay(e.target.value)} placeholder="Phone number or PromptPay ID"
+                  className="mt-1.5 w-full rounded-lg border border-input bg-bg-default px-3 py-2.5 text-sm text-content-emphasis placeholder-content-subtle focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring transition-colors" />
+              </div>
+              <div className="flex items-center gap-3 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowPaymentInfo(false)}>Cancel</Button>
+                <Button className="flex-1" onClick={() => { setPaypalEmail(editPaypal); setPromptpayId(editPromptpay); setShowPaymentInfo(false); toast.success('Payment info updated') }}>
+                  <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                  Save
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
