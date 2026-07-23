@@ -41,7 +41,7 @@ const mockPayouts: Payout[] = [
   { id: '8', partner: 'Albert Flores', email: 'albert@example.com', amount: 892.00, date: 'Jul 25, 2026', method: 'Stripe', status: 'sent', invoice: '#INV-2026-005', eligible: true },
 ]
 
-const paymentMethods = [
+const defaultPaymentMethods = [
   { id: 'stripe', name: 'Stripe Connect', description: 'Automatic payouts via Stripe', icon: Banknote, connected: false },
   { id: 'paypal', name: 'PayPal', description: 'Receive payments to your PayPal email', icon: Wallet, connected: true, value: 'creator@example.com' },
   { id: 'promptpay', name: 'PromptPay', description: 'Instant transfers for Thai affiliates', icon: HandCoins, connected: true, value: '089-xxx-xxxx' },
@@ -81,6 +81,9 @@ export default function PayoutsPage() {
   const [payoutFeeACH, setPayoutFeeACH] = useState(5)
   const [payoutFeeCard, setPayoutFeeCard] = useState(8)
   const [hoveredRow, setHoveredRow] = useState<string | null>(null)
+  const [paymentMethods, setPaymentMethods] = useState(defaultPaymentMethods)
+  const [editingMethod, setEditingMethod] = useState<{ id: string; value: string } | null>(null)
+  const [editValue, setEditValue] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -95,6 +98,21 @@ export default function PayoutsPage() {
   const ineligiblePayouts = mockPayouts.filter(p => (p.status === 'pending' || p.status === 'processing') && !p.eligible)
   const pendingTotal = eligiblePayouts.reduce((s, p) => s + p.amount, 0)
   const ineligibleTotal = ineligiblePayouts.reduce((s, p) => s + p.amount, 0)
+
+  const handleEditMethod = (id: string) => {
+    const method = paymentMethods.find(m => m.id === id)
+    if (!method) return
+    setEditValue(method.value || '')
+    setEditingMethod({ id, value: method.value || '' })
+  }
+
+  const handleSaveMethod = () => {
+    if (!editingMethod) return
+    setPaymentMethods(prev => prev.map(m => m.id === editingMethod.id ? { ...m, value: editValue, connected: !!editValue } : m))
+    toast.success(`${editingMethod.id === 'paypal' ? 'PayPal' : 'PromptPay'} updated`)
+    setEditingMethod(null)
+    setEditValue('')
+  }
 
   const handleWithdraw = () => {
     if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) { toast.error('Enter a valid amount'); return }
@@ -326,7 +344,7 @@ export default function PayoutsPage() {
                         {pm.connected ? 'Manage' : 'Connect'}
                       </Button>
                     ) : (
-                      <Button size="sm" variant="outline">Edit</Button>
+                      <Button size="sm" variant="outline" onClick={() => handleEditMethod(pm.id)}>Edit</Button>
                     )}
                   </div>
                 )
@@ -449,6 +467,33 @@ export default function PayoutsPage() {
         </>
       )}
 
+      {editingMethod && (
+        <>
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setEditingMethod(null)} />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 animate-scale-in rounded-xl border border-border-default bg-bg-default p-6 shadow-2xl">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-content-emphasis">Edit {editingMethod.id === 'paypal' ? 'PayPal' : 'PromptPay'}</h2>
+              <p className="text-sm text-content-subtle">Update your {editingMethod.id === 'paypal' ? 'PayPal email' : 'PromptPay ID'}</p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-content-subtle">{editingMethod.id === 'paypal' ? 'PayPal Email' : 'PromptPay ID'}</label>
+                <input type={editingMethod.id === 'paypal' ? 'email' : 'text'} value={editValue} onChange={(e) => setEditValue(e.target.value)}
+                  placeholder={editingMethod.id === 'paypal' ? 'email@example.com' : 'Phone number or PromptPay ID'}
+                  className="mt-1.5 w-full rounded-lg border border-input bg-bg-default px-3 py-2.5 text-sm text-content-emphasis placeholder-content-subtle focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring transition-colors" />
+              </div>
+              <div className="flex items-center gap-3 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setEditingMethod(null)}>Cancel</Button>
+                <Button className="flex-1" onClick={handleSaveMethod} disabled={!editValue.trim()}>
+                  <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                  Save
+                </Button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
       {showSettings && (
         <>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
@@ -459,7 +504,7 @@ export default function PayoutsPage() {
                   <h2 className="text-base font-semibold text-content-emphasis">Payout Settings</h2>
                   <p className="text-xs text-content-subtle">Configure payout rules and fees</p>
                 </div>
-                <button onClick={() => setShowSettings(false)} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-bg-subtlehover:text-content-emphasis transition-colors">
+                <button onClick={() => setShowSettings(false)} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-subtle hover:text-content-emphasis transition-colors">
                   <X className="h-4 w-4" />
                 </button>
               </div>
