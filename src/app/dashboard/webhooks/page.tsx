@@ -7,8 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Webhook, Plus, Trash2, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Webhook, Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
 import { toast } from 'sonner'
 
 const EVENT_OPTIONS = [
@@ -93,45 +94,41 @@ export default function WebhooksPage() {
           <h1 className="text-2xl font-bold text-content-emphasis">Webhooks</h1>
           <p className="text-sm text-content-subtle">Receive real-time events when links are clicked or conversions happen</p>
         </div>
-        <Button onClick={() => setShowNew(!showNew)}>
+        <Button onClick={() => setShowNew(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           Add Webhook
         </Button>
       </div>
 
-      {showNew && (
-        <Card className="border-border-default bg-bg-default animate-slide-up">
-          <CardContent className="p-6 space-y-4">
-            <Input
-              placeholder="https://api.your-app.com/webhooks/dubpartner"
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-            />
-            <div>
-              <p className="text-xs font-medium text-content-subtle mb-2">Events</p>
-              <div className="flex flex-wrap gap-2">
-                {EVENT_OPTIONS.map((ev) => (
-                  <button
-                    key={ev.value}
-                    onClick={() => setSelectedEvents((prev) => prev.includes(ev.value) ? prev.filter((e) => e !== ev.value) : [...prev, ev.value])}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium border transition-colors ${
-                      selectedEvents.includes(ev.value)
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-input text-content-subtle hover:text-content-emphasis'
-                    }`}
-                  >
-                    {ev.label}
-                  </button>
-                ))}
-              </div>
+      <Modal open={showNew} onClose={() => { setShowNew(false); setNewUrl('') }} title="Add Webhook" description="Receive real-time events when links are clicked or conversions happen">
+        <div className="space-y-4">
+          <Input
+            placeholder="https://api.your-app.com/webhooks/dubpartner"
+            value={newUrl}
+            onChange={(e) => setNewUrl(e.target.value)}
+          />
+          <div>
+            <p className="text-xs font-medium text-content-subtle mb-2">Events</p>
+            <div className="flex flex-wrap gap-2">
+              {EVENT_OPTIONS.map((ev) => (
+                <button key={ev.value}
+                  onClick={() => setSelectedEvents((prev) => prev.includes(ev.value) ? prev.filter((e) => e !== ev.value) : [...prev, ev.value])}
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium border transition-colors ${
+                    selectedEvents.includes(ev.value)
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-input text-content-subtle hover:text-content-emphasis'
+                  }`}>
+                  {ev.label}
+                </button>
+              ))}
             </div>
-            <div className="flex gap-2">
-              <Button onClick={createWebhook}>Create Webhook</Button>
-              <Button variant="ghost" onClick={() => setShowNew(false)}>Cancel</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <div className="flex gap-2 pt-2">
+            <Button onClick={createWebhook}>Create Webhook</Button>
+            <Button variant="ghost" onClick={() => { setShowNew(false); setNewUrl('') }}>Cancel</Button>
+          </div>
+        </div>
+      </Modal>
 
       {webhooks.length === 0 && !showNew ? (
         <EmptyState icon={<Webhook className="h-5 w-5" />} title="No webhooks" description="Create webhooks to receive real-time events from your links" />

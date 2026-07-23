@@ -60,6 +60,7 @@ model User {
   brands     Brand[]
   leads      Lead[]
   payouts    Payout[]
+  joinRequests JoinRequest[]
 }
 
 model Workspace {
@@ -144,6 +145,7 @@ model Campaign {
   leads         Lead[]
   socialBounties SocialBounty[]
   rewardConditions RewardCondition[]
+  joinRequests  JoinRequest[]
 }
 
 model PartnerGroup {
@@ -406,6 +408,23 @@ model Invoice {
   createdAt   DateTime @default(now())
 
   payout Payout @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+}
+
+model JoinRequest {
+  id          String   @id @default(cuid())
+  campaignId  String
+  affiliateId String
+  status      String   @default("PENDING")
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campaign  Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  affiliate User     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, affiliateId])
+  @@index([campaignId])
+  @@index([affiliateId])
 }
 
 model Lead {

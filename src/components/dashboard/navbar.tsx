@@ -1,8 +1,8 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { useSession } from 'next-auth/react'
 import { useCommandPalette } from '@/components/command-palette'
 import { WorkspaceSwitcher } from '@/components/workspace-switcher'
@@ -17,7 +17,7 @@ export function Navbar() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => setOpen(true)}
-          className="hidden sm:flex items-center gap-2 rounded-lg border border-border-default bg-bg-subtle/50 px-3 py-1.5 text-sm text-content-subtle hover:bg-bg-bg-subtletransition-colors w-64"
+          className="hidden sm:flex items-center gap-2 rounded-lg border border-border-default bg-bg-subtle/50 px-3 py-1.5 text-sm text-content-subtle hover:bg-bg-muted transition-colors w-64"
         >
           <Search className="h-3.5 w-3.5 shrink-0" />
           <span className="flex-1 text-left">Search pages...</span>
@@ -28,13 +28,14 @@ export function Navbar() {
 
         <button
           onClick={() => setOpen(true)}
-          className="sm:hidden flex items-center justify-center rounded-lg border border-border-default p-2 text-content-subtle hover:bg-bg-bg-subtletransition-colors"
+          className="sm:hidden flex items-center justify-center rounded-lg border border-border-default p-2 text-content-subtle hover:bg-bg-muted transition-colors"
         >
           <Search className="h-4 w-4" />
         </button>
       </div>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
         <WorkspaceSwitcher />
 
         <div className="flex items-center gap-3 pl-3 border-l border-border-default">

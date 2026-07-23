@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,10 +10,12 @@ import { Kbd } from '@/components/ui/kbd'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Separator } from '@/components/ui/separator'
 import { CreateCampaignModal } from '@/components/create-campaign-modal'
+import { CampaignSelectorModal } from '@/components/campaign-selector-modal'
 import {
   Plus, Megaphone, BarChart3, Link2, Users, Command,
   X, PlusCircle, Loader2, ChevronRight, Globe, Package,
-  Layers, Clock, DollarSign, ToggleLeft, ToggleRight,
+  Layers, Clock, DollarSign, ToggleLeft, ToggleRight, Percent,
+  Check, UserPlus,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -40,6 +44,16 @@ interface RewardCondition {
   rewardRate: number
   isActive: boolean
   createdAt: string
+}
+
+interface JoinRequestItem {
+  id: string
+  affiliateId: string
+  status: string
+  message: string | null
+  createdAt: string
+  affiliate: { id: string; name: string | null; email: string | null; image: string | null }
+  campaign: { id: string; title: string }
 }
 
 const campaignsData: Campaign[] = [
@@ -129,7 +143,16 @@ const conditionTypes: Record<string, { label: string; icon: React.ReactNode; des
 }
 
 export default function CampaignsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const isBrand = session?.user?.role === 'BRAND' || session?.user?.role === 'ADMIN'
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login')
+  }, [status, router])
+
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showJoinModal, setShowJoinModal] = useState(false)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const [conditions, setConditions] = useState<RewardCondition[]>([])
   const [showAddCondition, setShowAddCondition] = useState(false)
@@ -138,12 +161,24 @@ export default function CampaignsPage() {
   const [conditionRewardRate, setConditionRewardRate] = useState(10)
   const [conditionConfig, setConditionConfig] = useState<Record<string, string>>({})
   const [submittingCondition, setSubmittingCondition] = useState(false)
+  const [joinRequests, setJoinRequests] = useState<JoinRequestItem[]>([])
+  const [showRequests, setShowRequests] = useState(false)
+  const [respondingRequest, setRespondingRequest] = useState<string | null>(null)
 
   useEffect(() => {
     if (selectedCampaign) {
       fetchConditions(selectedCampaign.id)
     }
   }, [selectedCampaign])
+
+  useEffect(() => {
+    if (isBrand && showRequests) {
+      fetch('/api/brand/requests')
+        .then(res => res.json())
+        .then(data => setJoinRequests(Array.isArray(data) ? data : []))
+        .catch(() => {})
+    }
+  }, [isBrand, showRequests])
 
   const fetchConditions = async (campaignId: string) => {
     try {
@@ -199,34 +234,60 @@ export default function CampaignsPage() {
     } catch { toast.error('Something went wrong') }
   }
 
+  const handleRespondRequest = async (requestId: string, action: 'APPROVED' | 'REJECTED') => {
+    setRespondingRequest(requestId)
+    try {
+      const res = await fetch(`/api/brand/requests/${requestId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Failed'); return }
+      toast.success(action === 'APPROVED' ? 'Creator approved!' : 'Request rejected')
+      setJoinRequests(prev => prev.filter(r => r.id !== requestId))
+    } catch { toast.error('Something went wrong') }
+    finally { setRespondingRequest(null) }
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-content-emphasis">Campaigns</h1>
-          <p className="text-sm text-content-subtle">Manage your affiliate campaigns</p>
+          <h1 className="text-2xl font-bold text-content-emphasis">{isBrand ? 'Campaigns' : 'Available Campaigns'}</h1>
+          <p className="text-sm text-content-subtle">{isBrand ? 'Manage your affiliate campaigns' : 'Browse brand campaigns and join to start earning'}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-content-subtle/60">
-            <Kbd>⇧C</Kbd> New campaign
-          </span>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            New Campaign
-          </Button>
+          {isBrand ? (
+            <>
+              <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-content-subtle/60">
+                <Kbd>⇧C</Kbd> New campaign
+              </span>
+              <Button onClick={() => setShowCreateModal(true)}>
+                <Plus className="mr-1.5 h-4 w-4" />
+                New Campaign
+              </Button>
+            </>
+          ) : (
+            <Button onClick={() => setShowJoinModal(true)}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              Join Campaign
+            </Button>
+          )}
         </div>
       </div>
 
       {campaignsData.length === 0 ? (
         <EmptyState
           icon={<Megaphone className="h-5 w-5 text-content-subtle" />}
-          title="No campaigns yet"
-          description="Create your first affiliate campaign to start recruiting partners"
+          title={isBrand ? 'No campaigns yet' : 'No available campaigns'}
+          description={isBrand ? 'Create your first affiliate campaign to start recruiting partners' : 'Check back later for new brand campaigns'}
           action={
-            <Button onClick={() => setShowCreateModal(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Create Campaign
-            </Button>
+            isBrand ? (
+              <Button onClick={() => setShowCreateModal(true)}>
+                <Plus className="mr-1.5 h-4 w-4" />
+                Create Campaign
+              </Button>
+            ) : undefined
           }
         />
       ) : (
@@ -235,7 +296,7 @@ export default function CampaignsPage() {
             <Card
               key={campaign.id}
               className="border-border-default bg-bg-default transition-colors hover:border-border-default/80 cursor-pointer"
-              onClick={() => setSelectedCampaign(campaign)}
+              onClick={() => !isBrand ? null : setSelectedCampaign(campaign)}
             >
               <CardContent className="flex items-center justify-between p-6">
                 <div className="flex-1 min-w-0">
@@ -251,15 +312,27 @@ export default function CampaignsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-6 shrink-0">
-                  <div className="flex items-center gap-2 text-sm text-content-subtle">
-                    <Link2 className="h-4 w-4" />
-                    {campaign.links} links
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-content-subtle">
-                    <Users className="h-4 w-4" />
-                    {campaign.leads} leads
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-content-subtle" />
+                  {isBrand ? (
+                    <>
+                      <div className="flex items-center gap-2 text-sm text-content-subtle">
+                        <Link2 className="h-4 w-4" />
+                        {campaign.links} links
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-content-subtle">
+                        <Users className="h-4 w-4" />
+                        {campaign.leads} leads
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-content-subtle" />
+                    </>
+                  ) : (
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); setShowJoinModal(true) }}
+                      size="sm"
+                      className="shrink-0">
+                      <Percent className="mr-1 h-3.5 w-3.5" />
+                      Get Link
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -267,7 +340,89 @@ export default function CampaignsPage() {
         </div>
       )}
 
-      <CreateCampaignModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      {isBrand && (
+        <>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowRequests(!showRequests)}
+              className="flex items-center gap-2 text-sm font-medium text-content-emphasis hover:text-primary transition-colors"
+            >
+              <UserPlus className="h-4 w-4" />
+              Join Requests
+              {joinRequests.length > 0 && (
+                <span className="inline-flex items-center justify-center h-5 min-w-5 rounded-full bg-primary/10 px-1.5 text-[11px] font-semibold text-primary">
+                  {joinRequests.filter(r => r.status === 'PENDING').length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {showRequests && (
+            <div className="rounded-xl border border-border-default bg-bg-default animate-slide-up">
+              {joinRequests.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <UserPlus className="h-8 w-8 text-content-subtle/40" />
+                  <p className="mt-3 text-sm text-content-subtle">No join requests</p>
+                  <p className="mt-1 text-xs text-content-subtle/60">Creators will appear here when they request to join your campaigns</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border-default">
+                  {joinRequests.map((req) => (
+                    <div key={req.id} className="flex items-center gap-4 px-5 py-4">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bg-subtle text-xs font-medium text-content-emphasis shrink-0">
+                        {req.affiliate.name?.[0] || req.affiliate.email?.[0] || '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-content-emphasis">{req.affiliate.name || 'Anonymous'}</p>
+                        <p className="text-xs text-content-subtle">{req.affiliate.email}</p>
+                        <p className="mt-0.5 text-xs text-content-subtle/60">
+                          Requested to join <span className="font-medium text-content-emphasis">{req.campaign.title}</span>
+                        </p>
+                        {req.message && (
+                          <p className="mt-1 text-xs text-content-subtle italic">&ldquo;{req.message}&rdquo;</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {req.status === 'PENDING' ? (
+                          <>
+                            <Button
+                              onClick={() => handleRespondRequest(req.id, 'APPROVED')}
+                              disabled={respondingRequest === req.id}
+                              size="sm"
+                              className="bg-emerald-600 hover:bg-emerald-700"
+                            >
+                              {respondingRequest === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1" />}
+                              Approve
+                            </Button>
+                            <Button
+                              onClick={() => handleRespondRequest(req.id, 'REJECTED')}
+                              disabled={respondingRequest === req.id}
+                              size="sm"
+                              variant="outline"
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        ) : (
+                          <Badge variant={req.status === 'APPROVED' ? 'success' : 'warning'}>
+                            {req.status}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {isBrand && (
+        <CreateCampaignModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      )}
+
+      <CampaignSelectorModal open={showJoinModal} onClose={() => setShowJoinModal(false)} />
 
       {selectedCampaign && (
         <>
@@ -278,7 +433,7 @@ export default function CampaignsPage() {
                 <h2 className="text-base font-semibold text-content-emphasis">{selectedCampaign.title}</h2>
                 <p className="text-xs text-content-subtle">Campaign details & reward conditions</p>
               </div>
-              <button onClick={() => { setSelectedCampaign(null); setShowAddCondition(false) }} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-bg-subtlehover:text-content-emphasis transition-colors">
+              <button onClick={() => { setSelectedCampaign(null); setShowAddCondition(false) }} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-subtle hover:text-content-emphasis transition-colors">
                 <X className="h-4 w-4" />
               </button>
             </div>

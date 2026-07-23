@@ -108,7 +108,7 @@ export function CreateLinkModal({ open, onOpenChange }: CreateLinkModalProps) {
               <h2 className="text-base font-semibold text-content-emphasis">Create a Link</h2>
               <p className="text-xs text-content-subtle">Create a new short link for your campaign</p>
             </div>
-            <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-bg-subtlehover:text-content-emphasis transition-colors">
+            <button onClick={() => onOpenChange(false)} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-subtle hover:text-content-emphasis transition-colors">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -146,7 +146,7 @@ export function CreateLinkModal({ open, onOpenChange }: CreateLinkModalProps) {
                 <div>
                   <label className="text-sm font-medium text-content-emphasis">Short Link</label>
                   <div className="mt-1.5 flex items-center">
-                    <span className="flex h-10 items-center rounded-l-lg border border-input bg-bg-subtlepx-3 text-xs text-content-subtle shrink-0">link.dubpartner.co/r/</span>
+                    <span className="flex h-10 items-center rounded-l-lg border border-input bg-bg-subtle px-3 text-xs text-content-subtle shrink-0">link.dubpartner.co/r/</span>
                     <div className="relative flex-1">
                       <input type="text" placeholder="my-slug" value={slug} onChange={(e) => setSlug(slugify(e.target.value))}
                         className={cn('h-10 w-full border border-l-0 border-input bg-bg-default px-3 text-sm text-content-emphasis placeholder-content-subtle focus:outline-none focus:ring-1 transition-colors',
@@ -212,7 +212,7 @@ export function CreateLinkModal({ open, onOpenChange }: CreateLinkModalProps) {
 
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => onOpenChange(false)}
-                    className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-bg-subtletransition-colors">
+                    className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-subtle transition-colors">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting || slugAvailable === false}

@@ -228,7 +228,7 @@ export default function GroupsPage() {
                   <p className="text-xs text-content-subtle">{editing ? 'Update group settings' : 'Set up a new partner group'}</p>
                 </div>
                 <button onClick={() => { setShowModal(false); resetForm() }}
-                  className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-bg-subtlehover:text-content-emphasis transition-colors">
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-subtle hover:text-content-emphasis transition-colors">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -315,7 +315,7 @@ export default function GroupsPage() {
 
                 <div className="flex items-center gap-3 pt-2">
                   <button type="button" onClick={() => { setShowModal(false); resetForm() }}
-                    className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-bg-subtletransition-colors">
+                    className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-subtle transition-colors">
                     Cancel
                   </button>
                   <button type="submit" disabled={submitting}

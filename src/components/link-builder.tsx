@@ -161,7 +161,7 @@ export function LinkBuilder({ open, onClose, onCreated }: LinkBuilderProps) {
               <h2 className="text-base font-semibold text-content-emphasis">Create a Link</h2>
               <p className="text-xs text-content-subtle">Configure your short link</p>
             </div>
-            <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-bg-subtlehover:text-content-emphasis transition-colors">
+              <button onClick={onClose} className="flex h-7 w-7 items-center justify-center rounded-md text-content-subtle hover:bg-bg-subtle hover:text-content-emphasis transition-colors">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -319,7 +319,7 @@ export function LinkBuilder({ open, onClose, onCreated }: LinkBuilderProps) {
                         <input type="url" placeholder="https://example.com/us-specific" value={g.url} onChange={(e) => updateGeoOverride(i, 'url', e.target.value)}
                           className="flex-1 rounded-md border border-input bg-bg-default px-2.5 py-1.5 text-xs text-content-emphasis placeholder-content-subtle focus:border-ring focus:outline-none" />
                         <button type="button" onClick={() => removeGeoOverride(i)}
-                          className="shrink-0 rounded-md p-1.5 text-content-subtle hover:text-content-emphasis hover:bg-bg-bg-subtletransition-colors">
+                          className="shrink-0 rounded-md p-1.5 text-content-subtle hover:text-content-emphasis hover:bg-bg-subtle transition-colors">
                           <X className="h-3 w-3" />
                         </button>
                       </div>
@@ -397,11 +397,11 @@ export function LinkBuilder({ open, onClose, onCreated }: LinkBuilderProps) {
           <div className="border-t border-border-default p-6">
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => setShowQr(!showQr)}
-                className="flex items-center gap-1.5 rounded-lg border border-input px-3 py-2.5 text-xs text-content-subtle hover:text-content-emphasis hover:bg-bg-bg-subtletransition-colors">
+                className="flex items-center gap-1.5 rounded-lg border border-input px-3 py-2.5 text-xs text-content-subtle hover:text-content-emphasis hover:bg-bg-subtle transition-colors">
                 <QrCode className="h-4 w-4" />
               </button>
               <button type="button" onClick={onClose}
-                className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-bg-subtletransition-colors">
+                className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-subtle transition-colors">
                 Cancel
               </button>
               <button type="submit" onClick={handleSubmit} disabled={submitting}

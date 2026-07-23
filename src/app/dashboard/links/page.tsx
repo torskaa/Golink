@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { LinkRow } from '@/components/dashboard/link-row'
@@ -30,12 +30,20 @@ export default function LinksPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [showBuilder, setShowBuilder] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showTagFilter, setShowTagFilter] = useState(false)
   const [filterTags, setFilterTags] = useState<string[]>([])
-  const isBrand = session?.user?.role === 'BRAND'
+  const isBrand = session?.user?.role === 'BRAND' || session?.user?.role === 'ADMIN'
+
+  const handleCreateClick = useCallback(() => {
+    if (isBrand) {
+      setShowCreateModal(true)
+    } else {
+      router.push('/dashboard/marketplace')
+    }
+  }, [isBrand, router])
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
@@ -45,12 +53,16 @@ export default function LinksPage() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'c' && !e.metaKey && !e.ctrlKey && !(e.target instanceof HTMLInputElement)) {
-        setShowBuilder(true)
+        if (isBrand) {
+          setShowCreateModal(true)
+        } else {
+          router.push('/dashboard/marketplace')
+        }
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [isBrand, router])
 
   if (status === 'unauthenticated') return null
 
@@ -78,18 +90,24 @@ export default function LinksPage() {
           <p className="text-sm text-content-subtle">{isBrand ? 'Manage your short links' : 'Your generated referral links'}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-content-subtle/60">
-            <Kbd>C</Kbd> New link
-          </span>
+          {isBrand ? (
+            <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-content-subtle/60">
+              <Kbd>C</Kbd> New link
+            </span>
+          ) : (
+            <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-content-subtle/60">
+              <Kbd>C</Kbd> Join campaign
+            </span>
+          )}
           {isBrand && (
             <Button variant="outline" onClick={() => toast.success('CSV import coming soon')}>
               <Upload className="mr-1.5 h-4 w-4" />
               Import
             </Button>
           )}
-          <Button onClick={() => setShowBuilder(true)}>
+          <Button onClick={handleCreateClick}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Create Link
+            {isBrand ? 'Create Link' : 'Browse Campaigns'}
           </Button>
         </div>
       </div>
@@ -128,8 +146,8 @@ export default function LinksPage() {
       ) : filtered.length === 0 ? (
         <EmptyState icon={<Link2 className="h-5 w-5" />}
           title={searchQuery ? 'No links match your search' : 'No links yet'}
-          description={searchQuery ? 'Try a different search term' : 'Create your first short link to get started'}
-          action={!searchQuery ? <Button onClick={() => setShowBuilder(true)}><Plus className="mr-1.5 h-4 w-4" /> Create your first link</Button> : undefined} />
+          description={searchQuery ? 'Try a different search term' : isBrand ? 'Create your first short link to get started' : 'Join a brand campaign to start earning'}
+          action={!searchQuery ? <Button onClick={handleCreateClick}><Plus className="mr-1.5 h-4 w-4" /> {isBrand ? 'Create your first link' : 'Browse campaigns'}</Button> : undefined} />
       ) : (
         <div className="space-y-2">
           {filtered.map((link) => (
@@ -139,7 +157,9 @@ export default function LinksPage() {
         </div>
       )}
 
-      <LinkBuilder open={showBuilder} onClose={() => setShowBuilder(false)} onCreated={() => { router.refresh(); toast.success('Link created!') }} />
+      {isBrand && (
+        <LinkBuilder open={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      )}
     </div>
   )
 }

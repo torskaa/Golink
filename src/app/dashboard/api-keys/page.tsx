@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Key, Plus, Trash2, Copy, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
@@ -84,43 +85,36 @@ export default function ApiKeysPage() {
           <h1 className="text-2xl font-bold text-content-emphasis">API Keys</h1>
           <p className="text-sm text-content-subtle">Manage API access for programmatic link management</p>
         </div>
-        <Button onClick={() => setShowNew(!showNew)}>
+        <Button onClick={() => setShowNew(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
           Create Key
         </Button>
       </div>
 
-      {showNew && (
-        <Card className="border-border-default bg-bg-default animate-slide-up">
-          <CardContent className="p-6 space-y-4">
-            {newKey ? (
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-emerald-500">Key created! Copy it now:</p>
-                <div className="flex gap-2">
-                  <Input value={newKey} readOnly />
-                  <Button variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success('Copied!') }}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => { setShowNew(false); setNewKey(null); setNewName('') }}>
-                  Done
-                </Button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <Input
-                  placeholder="My API Key"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && createKey()}
-                />
-                <Button onClick={createKey}>Generate</Button>
-                <Button variant="ghost" onClick={() => setShowNew(false)}>Cancel</Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      <Modal open={showNew} onClose={() => { setShowNew(false); setNewName(''); setNewKey(null) }}
+        title={newKey ? 'API Key Created' : 'Create API Key'}
+        description={newKey ? 'Copy this key now — you won\'t see it again!' : 'Generate a new API key for programmatic access'}>
+        {newKey ? (
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Input value={newKey} readOnly />
+              <Button variant="outline" onClick={() => { navigator.clipboard.writeText(newKey); toast.success('Copied!') }}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => { setShowNew(false); setNewKey(null); setNewName('') }}>
+              Done
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input placeholder="My API Key" value={newName} onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && createKey()} />
+            <Button onClick={createKey}>Generate</Button>
+            <Button variant="ghost" onClick={() => { setShowNew(false); setNewName('') }}>Cancel</Button>
+          </div>
+        )}
+      </Modal>
 
       {keys.length === 0 && !showNew ? (
         <EmptyState icon={<Key className="h-5 w-5" />} title="No API keys" description="Create your first API key to integrate with external tools" />

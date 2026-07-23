@@ -23,14 +23,14 @@ import {
   ChevronDown,
   Wallet,
   Code2,
-  Radio,
   Activity,
   Trophy,
   ShoppingBag,
   ShieldAlert,
-  FileText,
   Puzzle,
   UserPlus,
+  Store,
+  User,
 } from 'lucide-react'
 
 const brandNavItems = [
@@ -38,31 +38,27 @@ const brandNavItems = [
   { href: '/dashboard/links', label: 'Links', icon: Link2 },
   { href: '/dashboard/campaigns', label: 'Campaigns', icon: Megaphone },
   { href: '/dashboard/affiliates', label: 'Affiliates', icon: Users },
-  { href: '/dashboard/partner-groups', label: 'Partner Groups', icon: UserPlus },
+  { href: '/dashboard/groups', label: 'Partner Groups', icon: UserPlus },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/leaderboard', label: 'Leaderboard', icon: Trophy },
   { href: '/dashboard/customers', label: 'Customers', icon: ShoppingBag },
-  { href: '/dashboard/analytics/events', label: 'Live Events', icon: Radio },
   { href: '/dashboard/payouts', label: 'Payouts', icon: Wallet },
   { href: '/dashboard/domains', label: 'Domains', icon: Globe },
   { href: '/dashboard/api-keys', label: 'API Keys', icon: Key },
   { href: '/dashboard/webhooks', label: 'Webhooks', icon: Webhook },
   { href: '/dashboard/sdks', label: 'SDKs & API', icon: Code2 },
-  { href: '/dashboard/landing-page', label: 'Landing Page', icon: FileText },
   { href: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
-  { href: '/dashboard/risk-monitoring', label: 'Risk Monitoring', icon: ShieldAlert },
+  { href: '/dashboard/risk', label: 'Risk Monitoring', icon: ShieldAlert },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 const creatorNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard/marketplace', label: 'Marketplace', icon: Store },
   { href: '/dashboard/links', label: 'My Links', icon: Link2 },
   { href: '/dashboard/earnings', label: 'Earnings', icon: DollarSign },
   { href: '/dashboard/payouts', label: 'Payouts', icon: Wallet },
-  { href: '/dashboard/analytics/events', label: 'Live Events', icon: Radio },
-  { href: '/dashboard/sdks', label: 'SDKs & API', icon: Code2 },
-  { href: '/dashboard/landing-page', label: 'Landing Page', icon: FileText },
-  { href: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
+  { href: '/dashboard/profile', label: 'Profile', icon: User },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 

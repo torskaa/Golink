@@ -84,7 +84,7 @@ export default function AdminSettingsPage() {
             </div>
             <label className="relative inline-flex h-6 w-11 cursor-pointer items-center">
               <input type="checkbox" defaultChecked className="peer sr-only" />
-              <div className="h-6 w-11 rounded-full bg-bg-subtle after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-muted-foreground after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:bg-white" />
+              <div className="h-6 w-11 rounded-full bg-bg-subtle after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-content-subtle after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:bg-white" />
             </label>
           </div>
         </CardContent>
