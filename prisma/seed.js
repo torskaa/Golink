@@ -54,7 +54,7 @@ async function main() {
 
   const brand = await prisma.brand.upsert({
     where: { id: 'demo-brand' },
-    update: {},
+    update: { isVerified: true, companyName: 'Demo Brand Co.' },
     create: {
       id: 'demo-brand',
       companyName: 'Demo Brand Co.',
@@ -66,7 +66,7 @@ async function main() {
 
   const workspace = await prisma.workspace.upsert({
     where: { slug: 'demo-brand' },
-    update: {},
+    update: { name: 'Demo Brand Co.' },
     create: {
       name: 'Demo Brand Co.',
       slug: 'demo-brand',
@@ -76,7 +76,11 @@ async function main() {
 
   const campaign = await prisma.campaign.upsert({
     where: { id: 'demo-campaign' },
-    update: {},
+    update: {
+      brandId: brand.id,
+      status: 'ACTIVE',
+      isPublic: true,
+    },
     create: {
       id: 'demo-campaign',
       workspaceId: workspace.id,

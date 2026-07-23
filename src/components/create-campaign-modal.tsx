@@ -91,6 +91,12 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
       rewardConfig = { minClicks, maxCap }
     }
 
+    if (!workspaceId) {
+      toast.error('Workspace not loaded. Please close and reopen the modal.')
+      setSubmitting(false)
+      return
+    }
+
     try {
       const partnerReferralReward = referralRewardEnabled
         ? { enabled: true, type: referralRewardType, rate: referralRewardRate }
@@ -117,12 +123,18 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
           isPublic,
         }),
       })
-      if (!res.ok) { const err = await res.json(); toast.error(err.error || 'Failed to create campaign'); return }
+      if (!res.ok) {
+        let msg = 'Failed to create campaign'
+        try { const err = await res.json(); msg = typeof err.error === 'string' ? err.error : JSON.stringify(err.error) } catch {}
+        toast.error(msg)
+        return
+      }
       toast.success('Campaign created successfully')
       onOpenChange(false)
       router.refresh()
-    } catch { toast.error('Something went wrong') }
-    finally { setSubmitting(false) }
+    } catch (e) {
+      toast.error(String(e))
+    } finally { setSubmitting(false) }
   }
 
   return (
