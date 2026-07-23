@@ -107,7 +107,46 @@ async function main() {
     },
   })
 
+  const product1 = await prisma.product.upsert({
+    where: { id: 'demo-product-1' },
+    update: { name: 'Summer T-Shirt', price: 29.99 },
+    create: {
+      id: 'demo-product-1',
+      brandId: brand.id,
+      name: 'Summer T-Shirt',
+      description: 'Limited edition summer t-shirt',
+      price: 29.99,
+      productUrl: 'https://example.com/summer-tshirt',
+    },
+  })
+
+  const product2 = await prisma.product.upsert({
+    where: { id: 'demo-product-2' },
+    update: { name: 'Summer Hat', price: 19.99 },
+    create: {
+      id: 'demo-product-2',
+      brandId: brand.id,
+      name: 'Summer Hat',
+      description: 'Stylish summer hat',
+      price: 19.99,
+      productUrl: 'https://example.com/summer-hat',
+    },
+  })
+
+  await prisma.campaignProduct.upsert({
+    where: { campaignId_productId: { campaignId: campaign.id, productId: product1.id } },
+    update: {},
+    create: { campaignId: campaign.id, productId: product1.id },
+  })
+
+  await prisma.campaignProduct.upsert({
+    where: { campaignId_productId: { campaignId: campaign.id, productId: product2.id } },
+    update: {},
+    create: { campaignId: campaign.id, productId: product2.id },
+  })
+
   console.log(`  Brand:     ${brand.companyName} (verified: ${brand.isVerified})`)
+  console.log(`  Products:  ${product1.name}, ${product2.name}`)
   console.log('\n  Link:      /r/demo-summer')
   console.log('\n  Workspace, Brand & Campaign seeded!')
   console.log('\n===========================')

@@ -19,6 +19,7 @@ export async function GET() {
         where: { status: 'ACTIVE' },
         include: {
           _count: { select: { links: true, leads: true, joinRequests: true } },
+          products: { include: { product: { select: { id: true, name: true, price: true } } } },
         },
       },
     },
@@ -48,6 +49,7 @@ export async function GET() {
         leads: c._count.leads,
         partners: c._count.joinRequests,
         requestStatus: requestMap.get(c.id) || null,
+        products: c.products.map(cp => cp.product),
       })),
   }))
 

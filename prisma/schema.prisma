@@ -111,6 +111,7 @@ model Brand {
 
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   campaigns Campaign[]
+  products  Product[]
 }
 
 model Campaign {
@@ -146,6 +147,38 @@ model Campaign {
   socialBounties SocialBounty[]
   rewardConditions RewardCondition[]
   joinRequests  JoinRequest[]
+  products      CampaignProduct[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  brandId     String
+  name        String
+  description String?
+  price       Float    @default(0)
+  currency    String   @default("USD")
+  imageUrl    String?
+  productUrl  String?
+  sku         String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  brand       Brand             @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  campaigns   CampaignProduct[]
+  links       Link[]
+  clickEvents ClickEvent[]
+}
+
+model CampaignProduct {
+  campaignId         String
+  productId          String
+  commissionOverride Float?
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, productId])
 }
 
 model PartnerGroup {
@@ -225,6 +258,7 @@ model Link {
   folderId        String?
   campaignId      String?
   partnerId       String?
+  productId       String?
   key             String
   url             String
   title           String?
@@ -264,6 +298,7 @@ model Link {
   folder       Folder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
   campaign     Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   partner      Partner?     @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  product      Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
   clickEvents  ClickEvent[]
   tags         LinkTag[]
   customerJourneyEvents CustomerJourneyEvent[]
@@ -273,6 +308,7 @@ model Link {
   @@index([folderId])
   @@index([campaignId])
   @@index([partnerId])
+  @@index([productId])
 }
 
 model Tag {
@@ -325,6 +361,7 @@ model Webhook {
 model ClickEvent {
   id          String   @id @default(cuid())
   linkId      String
+  productId   String?
   ip          String?
   country     String?
   city        String?
@@ -339,11 +376,13 @@ model ClickEvent {
   utmContent  String?
   createdAt   DateTime @default(now())
 
-  link Link @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  link    Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([linkId])
   @@index([createdAt])
   @@index([country])
+  @@index([productId])
 }
 
 model CustomerJourneyEvent {

@@ -17,7 +17,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const joinRequest = await prisma.joinRequest.findUnique({
     where: { id },
     include: {
-      campaign: { select: { id: true, workspaceId: true, brandId: true, title: true, commissionRate: true } },
+      campaign: { select: { id: true, workspaceId: true, brandId: true, title: true, commissionRate: true, targetUrl: true } },
     },
   })
   if (!joinRequest) {
@@ -38,18 +38,39 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   })
 
   if (action === 'APPROVED') {
-    const existingPartner = await prisma.partner.findFirst({
-      where: { workspaceId: joinRequest.campaign.workspaceId, email: (await prisma.user.findUnique({ where: { id: joinRequest.affiliateId }, select: { email: true } }))?.email || '' },
+    const affiliate = await prisma.user.findUnique({ where: { id: joinRequest.affiliateId }, select: { name: true, email: true } })
+
+    let partner = await prisma.partner.findFirst({
+      where: { workspaceId: joinRequest.campaign.workspaceId, email: affiliate?.email || '' },
     })
 
-    if (!existingPartner) {
-      const affiliate = await prisma.user.findUnique({ where: { id: joinRequest.affiliateId }, select: { name: true, email: true } })
-      await prisma.partner.create({
+    if (!partner) {
+      partner = await prisma.partner.create({
         data: {
           workspaceId: joinRequest.campaign.workspaceId,
           name: affiliate?.name || 'Partner',
           email: affiliate?.email || '',
           status: 'active',
+        },
+      })
+    }
+
+    const ref = joinRequest.affiliateId.slice(-6)
+    const key = `${joinRequest.campaign.id.slice(-6)}-${ref}`
+    const existingLink = await prisma.link.findFirst({
+      where: { workspaceId: joinRequest.campaign.workspaceId, key },
+    })
+
+    if (!existingLink) {
+      await prisma.link.create({
+        data: {
+          workspaceId: joinRequest.campaign.workspaceId,
+          campaignId: joinRequest.campaign.id,
+          partnerId: partner.id,
+          key,
+          url: joinRequest.campaign.targetUrl || 'https://example.com',
+          title: `${joinRequest.campaign.title} - ${affiliate?.name || 'Partner'}`,
+          isActive: true,
         },
       })
     }

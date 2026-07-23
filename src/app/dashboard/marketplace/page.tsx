@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Store, Percent, Link2, Users, Check, Loader2, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react'
+import { Store, Percent, Link2, Users, Check, Loader2, ExternalLink, ChevronDown, ChevronRight, Package } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Campaign {
@@ -19,6 +19,7 @@ interface Campaign {
   leads: number
   partners: number
   requestStatus: string | null
+  products?: { id: string; name: string; price: number }[]
 }
 
 interface Brand {
@@ -131,6 +132,15 @@ export default function MarketplacePage() {
                         </div>
                         {campaign.description && (
                           <p className="mt-0.5 text-xs text-content-subtle line-clamp-1">{campaign.description}</p>
+                        )}
+                        {campaign.products && campaign.products.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {campaign.products.map(p => (
+                              <span key={p.id} className="inline-flex items-center gap-1 rounded-md bg-bg-subtle px-2 py-0.5 text-[10px] text-content-subtle">
+                                <Package className="h-2.5 w-2.5" />{p.name}
+                              </span>
+                            ))}
+                          </div>
                         )}
                         <div className="flex items-center gap-3 mt-1.5 text-[11px] text-content-subtle/60">
                           <span className="flex items-center gap-1"><Link2 className="h-3 w-3" />{campaign.links} links</span>

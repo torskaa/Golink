@@ -31,11 +31,13 @@ import {
   UserPlus,
   Store,
   User,
+  Package,
 } from 'lucide-react'
 
 const brandNavItems = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/links', label: 'Links', icon: Link2 },
+  { href: '/dashboard/products', label: 'Products', icon: Package },
   { href: '/dashboard/campaigns', label: 'Campaigns', icon: Megaphone },
   { href: '/dashboard/affiliates', label: 'Affiliates', icon: Users },
   { href: '/dashboard/groups', label: 'Partner Groups', icon: UserPlus },

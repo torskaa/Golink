@@ -62,6 +62,8 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
   const [referralRewardRate, setReferralRewardRate] = useState(5)
   const [geoRewards, setGeoRewards] = useState<GeoReward[]>([])
   const [productRewards, setProductRewards] = useState<ProductReward[]>([])
+  const [brandProducts, setBrandProducts] = useState<{ id: string; name: string; price: number }[]>([])
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
 
   useEffect(() => {
     if (!open) return
@@ -72,7 +74,16 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
     ]).then(([workspaces, brand]) => {
       const ws = Array.isArray(workspaces) ? workspaces[0] : null
       if (ws?.id) setWorkspaceId(ws.id)
-      if (brand?.id) setBrandId(brand.id)
+      if (brand?.id) {
+        setBrandId(brand.id)
+        fetch(`/api/products?brandId=${brand.id}`)
+          .then(r => r.json())
+          .then(products => {
+            setBrandProducts(Array.isArray(products) ? products : [])
+            setSelectedProductIds([])
+          })
+          .catch(() => {})
+      }
     }).catch(() => {}).finally(() => setLoadingMeta(false))
   }, [open])
 
@@ -121,6 +132,7 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
           targetUrl,
           status,
           isPublic,
+          productIds: selectedProductIds,
         }),
       })
       if (!res.ok) {
@@ -364,6 +376,31 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
                 </div>
               ))}
             </div>
+
+            {brandProducts.length > 0 && (
+              <div className="space-y-3 rounded-lg border border-border-default bg-bg-subtle/30 p-4">
+                <div>
+                  <p className="text-sm font-medium text-content-emphasis">Linked Products</p>
+                  <p className="text-xs text-content-subtle">Select products this campaign promotes</p>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {brandProducts.map((p) => {
+                    const selected = selectedProductIds.includes(p.id)
+                    return (
+                      <label key={p.id} className={`flex items-center gap-3 rounded-md border px-3 py-2 cursor-pointer transition-colors ${selected ? 'border-primary bg-primary/5' : 'border-input hover:border-border-default'}`}>
+                        <input type="checkbox" checked={selected} onChange={() => {
+                          setSelectedProductIds(prev => selected ? prev.filter(id => id !== p.id) : [...prev, p.id])
+                        }} className="h-4 w-4 rounded border-border-default text-primary focus:ring-primary" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-content-emphasis">{p.name}</p>
+                        </div>
+                        <span className="text-xs text-content-subtle">${p.price.toFixed(2)}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="text-sm font-medium text-content-emphasis">Target URL (optional)</label>

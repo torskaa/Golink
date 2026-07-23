@@ -21,6 +21,7 @@ export async function GET(req: Request) {
     where,
     include: {
       _count: { select: { links: true, leads: true } },
+      products: { include: { product: { select: { id: true, name: true, price: true } } } },
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -73,6 +74,12 @@ export async function POST(req: Request) {
       partnerReferralReward: json.partnerReferralReward || '{}',
     },
   })
+
+  if (json.productIds && Array.isArray(json.productIds) && json.productIds.length > 0) {
+    await prisma.campaignProduct.createMany({
+      data: json.productIds.map((productId: string) => ({ campaignId: campaign.id, productId })),
+    })
+  }
 
   return NextResponse.json(campaign, { status: 201 })
 }

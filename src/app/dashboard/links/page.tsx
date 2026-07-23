@@ -35,6 +35,7 @@ export default function LinksPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showTagFilter, setShowTagFilter] = useState(false)
   const [filterTags, setFilterTags] = useState<string[]>([])
+  const [creatorLinks, setCreatorLinks] = useState<typeof allCreatorLinks>([])
   const isBrand = session?.user?.role === 'BRAND' || session?.user?.role === 'ADMIN'
 
   const handleCreateClick = useCallback(() => {
@@ -47,8 +48,17 @@ export default function LinksPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
-    if (status === 'authenticated') setTimeout(() => setLoading(false), 200)
-  }, [status, router])
+    if (status === 'authenticated') {
+      if (!isBrand) {
+        fetch('/api/affiliate/links')
+          .then(r => r.json())
+          .then(data => { setCreatorLinks(Array.isArray(data) ? data : []); setLoading(false) })
+          .catch(() => setLoading(false))
+      } else {
+        setTimeout(() => setLoading(false), 200)
+      }
+    }
+  }, [status, isBrand, router])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -66,7 +76,7 @@ export default function LinksPage() {
 
   if (status === 'unauthenticated') return null
 
-  const allLinks = isBrand ? allBrandLinks : allCreatorLinks
+  const allLinks = isBrand ? allBrandLinks : creatorLinks
   const filtered = allLinks.filter((l) => {
     const matchesSearch = searchQuery
       ? l.key_.toLowerCase().includes(searchQuery.toLowerCase()) ||

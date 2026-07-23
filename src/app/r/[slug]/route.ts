@@ -17,7 +17,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     if (domain) {
       link = await prisma.link.findFirst({
         where: { key: slug, domainId: domain.id, isActive: true },
-        include: { campaign: true },
+        include: { campaign: true, product: true },
       })
     }
   }
@@ -25,7 +25,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   if (!link) {
     link = await prisma.link.findFirst({
       where: { key: slug, isActive: true },
-      include: { campaign: true },
+      include: { campaign: true, product: true },
     })
   }
 
@@ -82,6 +82,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     await prisma.clickEvent.create({
       data: {
         linkId: link.id,
+        productId: link.productId || undefined,
         ip,
         country,
         city,
