@@ -36,7 +36,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} bg-bg-default text-content-emphasis antialiased`}>
+      <body className={`${inter.className} bg-bg-default text-content-emphasis antialiased`} suppressHydrationWarning>
         <ThemeProvider>
           <Providers>{children}</Providers>
         </ThemeProvider>
