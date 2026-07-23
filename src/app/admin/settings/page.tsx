@@ -1,14 +1,27 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { useState } from 'react'
-import { Shield, Key, Globe, Bell } from 'lucide-react'
+import { Shield, Key, Globe, Bell, RefreshCw } from 'lucide-react'
 
 export default function AdminSettingsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'ADMIN') router.push('/dashboard')
+  }, [status, session, router])
+
+  if (status === 'unauthenticated') return null
+  if (status === 'loading') return <div className="flex h-96 items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-content-subtle" /></div>
 
   const handleSave = () => {
     setSaving(true)

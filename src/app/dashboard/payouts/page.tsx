@@ -84,9 +84,11 @@ export default function PayoutsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard') }
   }, [status, router])
 
   if (status === 'unauthenticated') return null
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') return null
 
   const totalPaid = mockPayouts.filter(p => p.status === 'completed').reduce((s, p) => s + p.amount, 0)
   const eligiblePayouts = mockPayouts.filter(p => p.status === 'pending' || p.status === 'processing').filter(p => p.eligible)

@@ -8,13 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Kbd } from '@/components/ui/kbd'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Separator } from '@/components/ui/separator'
 import { CreateCampaignModal } from '@/components/create-campaign-modal'
-import { CampaignSelectorModal } from '@/components/campaign-selector-modal'
 import {
-  Plus, Megaphone, BarChart3, Link2, Users, Command,
+  Plus, Megaphone, Link2, Users,
   X, PlusCircle, Loader2, ChevronRight, Globe, Package,
-  Layers, Clock, DollarSign, ToggleLeft, ToggleRight, Percent,
+  Layers, Clock, DollarSign, ToggleLeft, ToggleRight,
   Check, UserPlus,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -149,10 +147,10 @@ export default function CampaignsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
-  }, [status, router])
+    if (status === 'authenticated' && !isBrand) router.push('/dashboard/marketplace')
+  }, [status, router, isBrand])
 
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [showJoinModal, setShowJoinModal] = useState(false)
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null)
   const [conditions, setConditions] = useState<RewardCondition[]>([])
   const [showAddCondition, setShowAddCondition] = useState(false)
@@ -257,7 +255,7 @@ export default function CampaignsPage() {
           <p className="text-sm text-content-subtle">{isBrand ? 'Manage your affiliate campaigns' : 'Browse brand campaigns and join to start earning'}</p>
         </div>
         <div className="flex items-center gap-3">
-          {isBrand ? (
+          {isBrand && (
             <>
               <span className="hidden sm:flex items-center gap-1.5 text-[11px] text-content-subtle/60">
                 <Kbd>⇧C</Kbd> New campaign
@@ -267,11 +265,6 @@ export default function CampaignsPage() {
                 New Campaign
               </Button>
             </>
-          ) : (
-            <Button onClick={() => setShowJoinModal(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Join Campaign
-            </Button>
           )}
         </div>
       </div>
@@ -312,27 +305,15 @@ export default function CampaignsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-6 shrink-0">
-                  {isBrand ? (
-                    <>
-                      <div className="flex items-center gap-2 text-sm text-content-subtle">
-                        <Link2 className="h-4 w-4" />
-                        {campaign.links} links
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-content-subtle">
-                        <Users className="h-4 w-4" />
-                        {campaign.leads} leads
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-content-subtle" />
-                    </>
-                  ) : (
-                    <Button
-                      onClick={(e) => { e.stopPropagation(); setShowJoinModal(true) }}
-                      size="sm"
-                      className="shrink-0">
-                      <Percent className="mr-1 h-3.5 w-3.5" />
-                      Get Link
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2 text-sm text-content-subtle">
+                    <Link2 className="h-4 w-4" />
+                    {campaign.links} links
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-content-subtle">
+                    <Users className="h-4 w-4" />
+                    {campaign.leads} leads
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-content-subtle" />
                 </div>
               </CardContent>
             </Card>
@@ -421,8 +402,6 @@ export default function CampaignsPage() {
       {isBrand && (
         <CreateCampaignModal open={showCreateModal} onOpenChange={setShowCreateModal} />
       )}
-
-      <CampaignSelectorModal open={showJoinModal} onClose={() => setShowJoinModal(false)} />
 
       {selectedCampaign && (
         <>

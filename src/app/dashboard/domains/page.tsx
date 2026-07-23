@@ -32,6 +32,7 @@ export default function DomainsPage() {
   }, [status])
 
   if (status === 'unauthenticated') { router.push('/login'); return null }
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard'); return null }
 
   const handleSave = async (workspaceId: string) => {
     const res = await fetch('/api/domains', {

@@ -96,9 +96,11 @@ export default function RiskMonitoringPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard') }
   }, [status, router])
 
   if (status === 'unauthenticated') return null
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') return null
 
   const flaggedPartners = mockPartners.filter(p => p.flags.length > 0)
   const paidTrafficDetections = mockPartners.filter(p => p.flags.includes('paid_traffic'))

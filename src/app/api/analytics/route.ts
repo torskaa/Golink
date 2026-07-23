@@ -39,10 +39,10 @@ export async function GET(req: Request) {
   const [timeseries, topCountries, topReferrers, devicesBreakdown, totalClicks, totalLeads, totalRevenue] =
     await Promise.all([
       prisma.$queryRawUnsafe<Array<{ date: string; clicks: number }>>(
-        `SELECT strftime('%Y-%m-%d %H:00:00', created_at) AS date, COUNT(*) AS clicks
+        `SELECT strftime('%Y-%m-%d %H:00:00', "createdAt") AS date, COUNT(*) AS clicks
          FROM ClickEvent
          WHERE linkId IN (SELECT id FROM Link WHERE workspaceId = ?)
-           AND created_at >= ? AND created_at <= ?
+           AND "createdAt" >= ? AND "createdAt" <= ?
          GROUP BY date ORDER BY date ASC`,
         workspaceId, start.toISOString(), end.toISOString()
       ),
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
         `SELECT country, COUNT(*) AS clicks
          FROM ClickEvent
          WHERE linkId IN (SELECT id FROM Link WHERE workspaceId = ?)
-           AND created_at >= ? AND created_at <= ?
+           AND "createdAt" >= ? AND "createdAt" <= ?
          GROUP BY country ORDER BY clicks DESC LIMIT 5`,
         workspaceId, start.toISOString(), end.toISOString()
       ),
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
         `SELECT referer, COUNT(*) AS clicks
          FROM ClickEvent
          WHERE linkId IN (SELECT id FROM Link WHERE workspaceId = ?)
-           AND created_at >= ? AND created_at <= ?
+           AND "createdAt" >= ? AND "createdAt" <= ?
          GROUP BY referer ORDER BY clicks DESC LIMIT 5`,
         workspaceId, start.toISOString(), end.toISOString()
       ),
@@ -66,7 +66,7 @@ export async function GET(req: Request) {
         `SELECT device, COUNT(*) AS clicks
          FROM ClickEvent
          WHERE linkId IN (SELECT id FROM Link WHERE workspaceId = ?)
-           AND created_at >= ? AND created_at <= ?
+           AND "createdAt" >= ? AND "createdAt" <= ?
          GROUP BY device ORDER BY clicks DESC`,
         workspaceId, start.toISOString(), end.toISOString()
       ),

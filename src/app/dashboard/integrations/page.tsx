@@ -156,9 +156,11 @@ export default function IntegrationsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard') }
   }, [status, router])
 
   if (status === 'unauthenticated') return null
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') return null
   if (status === 'loading') return <div className="flex h-96 items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-content-subtle" /></div>
 
   const toggleConnection = (id: string) => {

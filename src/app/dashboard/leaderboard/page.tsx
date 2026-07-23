@@ -36,6 +36,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return }
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard'); return }
     if (status === 'authenticated') {
       fetch('/api/partners')
         .then((r) => r.json())
@@ -46,6 +47,7 @@ export default function LeaderboardPage() {
   }, [status, router])
 
   if (status === 'unauthenticated') return null
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') return null
 
   const sorted = [...partners].sort((a, b) => b.totalRevenue - a.totalRevenue)
   const filtered = searchQuery

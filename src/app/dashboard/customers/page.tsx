@@ -111,9 +111,11 @@ export default function CustomersPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') router.push('/dashboard')
   }, [status, router])
 
   if (status === 'unauthenticated') return null
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') return null
 
   const filteredCustomers = mockCustomers.filter(c =>
     c.email.toLowerCase().includes(searchQuery.toLowerCase())

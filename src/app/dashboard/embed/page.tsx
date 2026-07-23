@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ReferralDashboard } from '@/components/embed/referral-dashboard'
-import { Check, Copy, Code2 } from 'lucide-react'
+import { Check, Copy, Code2, RefreshCw } from 'lucide-react'
 
 const htmlCode = `<!-- Embed anywhere in your app -->
 <div id="dubpartner-dashboard"></div>
@@ -26,9 +28,18 @@ export function App() {
 }`
 
 export default function EmbedPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [copiedHtml, setCopiedHtml] = useState(false)
   const [copiedReact, setCopiedReact] = useState(false)
   const [iframeTheme, setIframeTheme] = useState<'light' | 'dark'>('dark')
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login')
+  }, [status, router])
+
+  if (status === 'unauthenticated') return null
+  if (status === 'loading') return <div className="flex h-96 items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-content-subtle" /></div>
 
   const copyToClipboard = async (text: string, setter: (v: boolean) => void) => {
     try {

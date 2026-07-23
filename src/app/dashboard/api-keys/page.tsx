@@ -43,6 +43,7 @@ export default function ApiKeysPage() {
   }, [status])
 
   if (status === 'unauthenticated') { router.push('/login'); return null }
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard'); return null }
 
   const createKey = async () => {
     if (!newName.trim()) return

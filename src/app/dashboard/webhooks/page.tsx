@@ -47,6 +47,7 @@ export default function WebhooksPage() {
   }, [status])
 
   if (status === 'unauthenticated') { router.push('/login'); return null }
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard'); return null }
 
   const createWebhook = async () => {
     if (!newUrl.trim()) return

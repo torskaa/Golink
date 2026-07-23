@@ -1,5 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,6 +12,7 @@ import {
   DollarSign,
   CheckCircle2,
   XCircle,
+  RefreshCw,
 } from 'lucide-react'
 
 const payouts = [
@@ -19,6 +23,17 @@ const payouts = [
 ]
 
 export default function AdminPayoutsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'ADMIN') router.push('/dashboard')
+  }, [status, session, router])
+
+  if (status === 'unauthenticated') return null
+  if (status === 'loading') return <div className="flex h-96 items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-content-subtle" /></div>
+
   const pendingTotal = payouts.filter(p => p.status === 'pending').reduce((s, p) => s + p.amount, 0)
   const paidTotal = payouts.filter(p => p.status === 'paid').reduce((s, p) => s + p.amount, 0)
 

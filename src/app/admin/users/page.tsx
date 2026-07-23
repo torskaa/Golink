@@ -1,5 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,7 +10,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Kbd } from '@/components/ui/kbd'
 import { Input } from '@/components/ui/input'
 import { useState } from 'react'
-import { Search, Shield, ShieldOff, Mail, Command } from 'lucide-react'
+import { Search, Shield, ShieldOff, Mail, Command, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 
 const users = [
@@ -20,7 +23,17 @@ const users = [
 ]
 
 export default function AdminUsersPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'ADMIN') router.push('/dashboard')
+  }, [status, session, router])
+
+  if (status === 'unauthenticated') return null
+  if (status === 'loading') return <div className="flex h-96 items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-content-subtle" /></div>
 
   const filtered = searchQuery
     ? users.filter(

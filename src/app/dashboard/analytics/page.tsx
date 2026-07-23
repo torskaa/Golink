@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { AnalyticsAreaChart } from '@/components/charts/area-chart'
 import { BreakdownList } from '@/components/charts/breakdown-list'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Kbd } from '@/components/ui/kbd'
 import { ChartSkeleton } from '@/components/ui/skeleton'
-import { Download, Command } from 'lucide-react'
+import { Download, Command, RefreshCw } from 'lucide-react'
 
 const mockTimeseries = Array.from({ length: 24 }, (_, i) => ({
   date: `2026-07-22 ${String(i).padStart(2, '0')}:00:00`,
@@ -37,7 +39,19 @@ const mockDevices = [
 ]
 
 export default function AnalyticsPage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [range, setRange] = useState('7d')
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.push('/login')
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') {
+      router.push('/dashboard')
+    }
+  }, [status, session, router])
+
+  if (status === 'unauthenticated') return null
+  if (status === 'loading') return <div className="flex h-96 items-center justify-center"><RefreshCw className="h-6 w-6 animate-spin text-content-subtle" /></div>
 
   return (
     <div className="space-y-6 animate-fade-in">

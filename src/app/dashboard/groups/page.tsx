@@ -54,6 +54,7 @@ export default function GroupsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return }
+    if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') { router.push('/dashboard'); return }
     if (status === 'authenticated') {
       Promise.all([
         fetch('/api/campaigns').then((r) => r.json()).catch(() => []),
@@ -134,6 +135,7 @@ export default function GroupsPage() {
   }
 
   if (status === 'unauthenticated') return null
+  if (status === 'authenticated' && session?.user?.role !== 'BRAND' && session?.user?.role !== 'ADMIN') return null
 
   return (
     <div className="space-y-6 animate-fade-in">

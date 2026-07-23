@@ -43,12 +43,26 @@ export default function DashboardPage() {
   const [range, setRange] = useState('7d')
   const [loading, setLoading] = useState(true)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [workspaceId, setWorkspaceId] = useState('')
   const role = session?.user?.role
   const isBrand = role === 'BRAND'
 
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    fetch('/api/workspaces')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setWorkspaceId(data[0].id)
+        }
+      })
+      .catch(() => {})
+  }, [status])
+
   const fetchAnalytics = useCallback(async () => {
+    if (!workspaceId) return
     try {
-      const res = await fetch(`/api/analytics?range=${range}`)
+      const res = await fetch(`/api/analytics?workspaceId=${workspaceId}&range=${range}`)
       if (res.ok) {
         const data = await res.json()
         setAnalytics(data)
@@ -56,7 +70,7 @@ export default function DashboardPage() {
     } catch {
       // use mock fallback
     }
-  }, [range])
+  }, [range, workspaceId])
 
   useEffect(() => {
     if (status === 'unauthenticated') {

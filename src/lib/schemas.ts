@@ -22,17 +22,39 @@ export const createCampaignSchema = z.object({
 
 export const createLinkSchema = z.object({
   workspaceId: z.string().min(1),
+  domainId: z.string().optional(),
+  folderId: z.string().optional(),
   campaignId: z.string().optional(),
   partnerId: z.string().optional(),
   key: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/, 'Only lowercase letters, numbers, and hyphens'),
   url: z.string().url('Must be a valid URL'),
   title: z.string().optional(),
+  description: z.string().optional(),
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmTerm: z.string().optional(),
+  utmContent: z.string().optional(),
+  expiresAt: z.string().optional(),
+  password: z.string().optional(),
+  cloaked: z.boolean().optional(),
+  ogTitle: z.string().optional(),
+  ogDescription: z.string().optional(),
+  ogImage: z.string().optional(),
+  abTestUrl: z.string().url().optional().or(z.literal('')),
+  abTestTraffic: z.number().min(5).max(95).optional(),
+  deviceMobileUrl: z.string().optional(),
+  deviceDesktopUrl: z.string().optional(),
+  deviceTabletUrl: z.string().optional(),
+  geoOverrides: z.string().optional(),
+  deepLinkIos: z.string().optional(),
+  deepLinkAndroid: z.string().optional(),
 })
 
 export const analyticsQuerySchema = z.object({
   linkId: z.string().optional(),
   campaignId: z.string().optional(),
-  workspaceId: z.string().min(1),
+  workspaceId: z.string().optional(),
   range: z.enum(['24h', '7d', '30d']).default('7d'),
 })
 
