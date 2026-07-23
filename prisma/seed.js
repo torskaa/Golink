@@ -52,6 +52,18 @@ async function main() {
   })
   console.log(`  Creator:   creator@dubpartner.co / demo123`)
 
+  const brand = await prisma.brand.upsert({
+    where: { id: 'demo-brand' },
+    update: {},
+    create: {
+      id: 'demo-brand',
+      companyName: 'Demo Brand Co.',
+      websiteUrl: 'https://example.com',
+      isVerified: true,
+      userId: brandUser.id,
+    },
+  })
+
   const workspace = await prisma.workspace.upsert({
     where: { slug: 'demo-brand' },
     update: {},
@@ -68,11 +80,13 @@ async function main() {
     create: {
       id: 'demo-campaign',
       workspaceId: workspace.id,
+      brandId: brand.id,
       title: 'Summer Launch 2026',
       description: 'Affiliate campaign for summer product line',
       commissionRate: 15,
       targetUrl: 'https://example.com/summer',
       status: 'ACTIVE',
+      isPublic: true,
     },
   })
 
@@ -89,10 +103,11 @@ async function main() {
     },
   })
 
+  console.log(`  Brand:     ${brand.companyName} (verified: ${brand.isVerified})`)
   console.log('\n  Link:      /r/demo-summer')
-  console.log('\n  Workspace & Campaign seeded!')
+  console.log('\n  Workspace, Brand & Campaign seeded!')
   console.log('\n===========================')
-  console.log('  Login at: http://localhost:3999/login')
+  console.log('  Login at: http://localhost:3000/login')
   console.log('  Passwords: demo123')
   console.log('===========================')
 

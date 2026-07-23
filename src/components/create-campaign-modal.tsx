@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, Loader2, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -39,6 +39,9 @@ const countries = [
 
 export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalProps) {
   const router = useRouter()
+  const [workspaceId, setWorkspaceId] = useState('')
+  const [brandId, setBrandId] = useState('')
+  const [loadingMeta, setLoadingMeta] = useState(true)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [rewardType, setRewardType] = useState<RewardType>('percentage')
@@ -59,6 +62,19 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
   const [referralRewardRate, setReferralRewardRate] = useState(5)
   const [geoRewards, setGeoRewards] = useState<GeoReward[]>([])
   const [productRewards, setProductRewards] = useState<ProductReward[]>([])
+
+  useEffect(() => {
+    if (!open) return
+    setLoadingMeta(true)
+    Promise.all([
+      fetch('/api/workspaces').then(res => res.json()),
+      fetch('/api/brand').then(res => res.json()),
+    ]).then(([workspaces, brand]) => {
+      const ws = Array.isArray(workspaces) ? workspaces[0] : null
+      if (ws?.id) setWorkspaceId(ws.id)
+      if (brand?.id) setBrandId(brand.id)
+    }).catch(() => {}).finally(() => setLoadingMeta(false))
+  }, [open])
 
   if (!open) return null
 
@@ -84,7 +100,8 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          workspaceId: 'default',
+          workspaceId,
+          brandId: brandId || undefined,
           title,
           description,
           commissionRate: rewardType === 'flat' ? flatFee : commissionRate,
@@ -364,9 +381,9 @@ export function CreateCampaignModal({ open, onOpenChange }: CreateCampaignModalP
                 className="flex-1 rounded-lg border border-input py-2.5 text-sm font-medium text-content-emphasis hover:bg-bg-bg-subtletransition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={submitting || !title}
+              <button type="submit" disabled={submitting || loadingMeta || !title}
                 className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors">
-                {submitting ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Creating...</span> : 'Create Campaign'}
+                {loadingMeta ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Loading...</span> : submitting ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Creating...</span> : 'Create Campaign'}
               </button>
             </div>
           </form>
